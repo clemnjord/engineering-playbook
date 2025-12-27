@@ -1,0 +1,19 @@
+To update a PostgreSQL password (if lost for example).
+
+In the terminal, type `psql`.
+
+[NOTE]
+----
+You might need to switch users with command `su postgres`.
+----
+
+[source, psql]
+----
+ALTER USER user_name WITH PASSWORD 'new_password';
+----
+
+[NOTE]
+----
+Do not forget the ";" at the end. +
+Another way is type `\password postgres` then enter the new password, in the psql interactive terminal.
+----

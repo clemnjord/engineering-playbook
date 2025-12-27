@@ -1,0 +1,6 @@
+To interact with a service started with docker compose type:
+
+[source, sh]
+----
+docker compose exec -it <service-name> bash
+----
