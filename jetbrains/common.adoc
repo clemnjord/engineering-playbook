@@ -1,0 +1,6 @@
+:experimental:
+
+For bigger indentation in project treeview, go to menu:Settings[Appearance & Behavior > Appearance > Tree Views > Use smaller indents]
+
+To add indent guides in project treeview, go to menu:Settings[Appearance & Behavior > Appearance > Tree Views > Show indent guides]
+
