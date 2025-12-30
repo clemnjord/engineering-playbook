@@ -1,0 +1,208 @@
+= SQL Murder Mystery solution
+
+Solutions to the https://mystery.knightlab.com/[SQL Murder Mystery] game.
+
+== Setup
+
+A crime has taken place and the detective needs your help.
+The detective gave you the crime scene report, but you somehow lost it.
+You vaguely remember that the crime was a **murder** that occurred sometime on **Jan.15, 2018** and that it took place in **SQL City**.
+Start by retrieving the corresponding crime scene report from the police department’s database.
+
+
+
+
+
+== CRIME SCENE REPORT
+
+=== Query
+[source, sql]
+----
+SELECT * FROM crime_scene_report
+WHERE city = 'SQL City'
+AND type = 'murder'
+AND date = '20180115';
+----
+
+=== Result
+
+|===
+|date	|type	|description	|city
+
+|20180115
+|murder
+|Security footage shows that there were 2 witnesses.
+The first witness lives at the last house on "Northwestern Dr".
+The second witness, named Annabel, lives somewhere on "Franklin Ave".
+|SQL City
+|===
+
+
+
+
+== WITNESSES
+
+=== Query 1
+[source, sql]
+----
+SELECT * FROM person
+WHERE name LIKE '%annabel%'
+AND address_street_name LIKE '%Franklin ave%';
+----
+
+=== Result 1
+|===
+|id	|name	|license_id	|address_number	|address_street_name	|ssn
+
+|16371
+|Annabel Miller
+|490173
+|103
+|Franklin Ave
+|318771143
+|===
+
+=== Query 2
+[source, sql]
+----
+SELECT * FROM person
+WHERE address_street_name LIKE '%Northwestern Dr%'
+ORDER BY address_number DESC
+LIMIT 1;
+----
+
+=== Result 2
+|===
+|id	|name	|license_id	|address_number	|address_street_name	|ssn
+
+|14887
+|Morty Schapiro
+|18009
+|4919
+|Northwestern Dr
+|111564949
+|===
+
+
+
+
+
+== INTERVIEWS
+
+=== Query
+[source, sql]
+----
+SELECT id, name, transcript
+FROM person
+JOIN interview
+ON id = person_id
+WHERE id = 16371
+OR id = 14887;
+----
+
+=== Result
+
+|===
+|id |name |transcript
+
+|14887
+|Morty Schapiro
+|I heard a gunshot and then saw a man run out. He had a "Get Fit Now Gym" bag.
+The membership number on the bag started with "48Z".
+Only gold members have those bags.
+The man got into a car with a plate that included "H42W".
+
+|16371
+|Annabel Miller
+|I saw the murder happen, and I recognized the killer from my gym when I was working out last week on January the 9th.
+|===
+
+
+
+
+
+== MURDERER
+
+=== Query
+[source, sql]
+----
+SELECT p.name
+FROM get_fit_now_member AS m
+JOIN get_fit_now_check_in AS c
+ON m.id = c.membership_id
+JOIN person AS p
+ON m.name = p.name
+JOIN drivers_license AS d
+ON p.license_id = d.id
+WHERE c.membership_id LIKE '48Z%'
+AND c.check_in_date IS '20180109'
+----
+
+=== Result
+
+|===
+|name
+
+|Jeremy Bowers
+|===
+
+
+
+
+
+== MURDERER'S INTERVIEW
+
+=== Query
+[source, sql]
+----
+SELECT id, transcript
+FROM person AS p
+JOIN interview AS i
+ON p.id = i.person_id
+WHERE name LIKE 'Jeremy Bowers'
+LIMIT 10
+----
+
+=== Result
+
+|===
+|id |transcript
+
+|67318
+|I was hired by a woman with a lot of money.
+I don't know her name but I know she's around 5'5" (65") or 5'7" (67").
+She has red hair and she drives a Tesla Model S.
+I know that she attended the SQL Symphony Concert 3 times in December 2017.
+|===
+
+
+
+
+
+== TRUE VILLAIN
+
+=== Query
+[source, sql]
+----
+SELECT DISTINCT p.name
+FROM person AS p
+JOIN drivers_license AS dl
+ON p.license_id = dl.id
+JOIN facebook_event_checkin AS fb
+ON p.id = fb.person_id
+WHERE dl.car_make LIKE '%Tesla%'
+AND dl.car_model LIKE '%Model S%'
+AND dl.height >= 65
+AND dl.height <= 67
+AND dl.hair_color LIKE '%red%'
+----
+
+=== Result
+
+|===
+|id |name
+
+|99716
+|Miranda Priestly
+|===
+
