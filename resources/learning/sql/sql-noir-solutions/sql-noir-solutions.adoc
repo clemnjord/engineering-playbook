@@ -1,0 +1,17 @@
+= SQL Noir solution
+
+:sectnums:
+:sectnumlevels: 5
+
+Solutions to the https://www.sqlnoir.com/[SQL Noir] game.
+
+include::case_001.adoc[leveloffset=+1]
+
+<<<
+
+include::case_002.adoc[leveloffset=+1]
+
+<<<
+
+include::case_003.adoc[leveloffset=+1]
+

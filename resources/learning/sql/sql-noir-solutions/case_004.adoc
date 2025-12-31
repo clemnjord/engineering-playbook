@@ -1,0 +1,227 @@
+= Case #004: The Midnight Masquerade Murder
+
+== Setup
+On October 31, 1987, at a Coconut Grove mansion masked ball, Leonard Pierce was found dead in the garden.
+Can you piece together all the clues to expose the true murderer?
+
+== Objectives
+Reveal the true murderer of this complex case.
+
+
+
+
+
+
+== Step 1: Retrieve crime scene details
+
+=== Query
+[source, sql]
+----
+SELECT *
+FROM crime_scene
+WHERE location LIKE '%Coconut Grove%'
+AND location LIKE '%mansion%'
+----
+
+=== Result
+
+|===
+|id |date   |location   |description
+
+|75
+|19871031
+|Miami Mansion, Coconut Grove
+|During a masked ball, a body was found in the garden.
+Witnesses mentioned a hotel booking and suspicious phone activity.
+|===
+
+
+
+
+
+
+
+== Step 2: Find witnesses and their statements
+
+=== Query
+[source, sql]
+----
+SELECT p.id, p.name, ws.clue
+FROM person AS p
+JOIN witness_statements AS ws
+ON p.id = ws.witness_id
+WHERE crime_scene_id IS 75
+----
+
+=== Result
+
+|===
+|id	|name |clue
+
+|37
+|Steven Nelson
+|I overheard a booking at The Grand Regency.
+
+|42
+|Sharon Phillips
+|I noticed someone at the front desk discussing Room 707 for a reservation made yesterday.
+|===
+
+
+
+
+
+
+
+== Step 3: Find suspect acolyte
+
+=== Query
+[source, sql]
+----
+SELECT p.id, p.name, sr.note
+FROM person AS p
+JOIN hotel_checkins AS hc
+ON p.id = hc.person_id
+JOIN surveillance_records AS sr
+ON hc.id = sr.hotel_checkin_id
+WHERE hc.check_in_date IS 19871030
+AND hc.room_number IS '707'
+AND sr.note IS NOT null
+----
+
+=== Result
+Multiple reports, but only one of note.
+
+|===
+|id	    |name	        |note
+
+|11	    |Antonio Rossi  |Subject was overheard yelling on a phone: "Did you kill him?"
+|===
+
+
+
+
+
+
+
+== Step 4: Find suspect 1
+
+=== Query
+[source, sql]
+----
+SELECT p.id, p.name, pr.note
+FROM person AS p
+JOIN phone_records AS pr
+ON p.id = pr.recipient_id
+WHERE pr.caller_id = 11
+----
+
+=== Result
+
+|===
+|id	|name	|note
+
+|58
+|Victor DiMarco
+|Why did you kill him, bro? You should have left the carpenter do it himself!
+|===
+
+
+
+
+
+
+== Step 5: Retrieve suspect 1's confession
+
+=== Query
+[source, sql]
+----
+SELECT *
+FROM final_interviews
+WHERE person_id = 58
+----
+
+=== Result
+
+|===
+|id	|person_id	|confession
+|58	|58	        |I didn’t kill Leo per se. I was just a middleman.
+|===
+
+== Step 6: Identify the mastermind
+
+=== Query 1
+[source, sql]
+----
+SELECT
+  c.id AS caller_id,
+  c.name AS caller_name,
+  r.id AS recipient_id,
+  r.name AS recipient_name,
+  pr.note
+FROM phone_records AS pr
+JOIN person AS c ON c.id = pr.caller_id
+JOIN person AS r ON r.id = pr.recipient_id
+WHERE pr.caller_id = 58
+OR pr.recipient_id = 58
+
+----
+
+=== Result 1
+
+|===
+|caller_id	|caller_name	|recipient_id	|recipient_name	|note
+
+|11
+|Antonio Rossi
+|58
+|Victor DiMarco
+|Why did you kill him, bro? You should have left the carpenter do it himself!
+
+|133
+|Unknown
+|58
+|Victor DiMarco
+|I will do it. Only if you give me that nice Lambo of yours.
+|===
+
+
+
+=== Query 2
+[source, sql]
+----
+SELECT p.id, p.name
+FROM person AS p
+JOIN vehicle_registry AS vr
+ON p.id = vr.person_id
+WHERE car_make LIKE '%lambo%'
+AND occupation IS 'Carpenter'
+----
+
+=== Result 2
+
+|===
+|id	    |name
+
+|97	    |Marco Santos
+|===
+
+== Step 7: Retrieve mastermind's confession
+
+=== Query
+[source, sql]
+----
+SELECT *
+FROM final_interviews
+WHERE person_id = 97
+----
+
+=== Result
+|===
+|id	|person_id	|confession
+
+|97	|97	        |I ordered the hit. It was me. You caught me.
+|===
+
+== Conclusion
+The real murderer is Marco Santos.

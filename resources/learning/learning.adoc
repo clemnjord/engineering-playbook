@@ -1,0 +1,38 @@
+= Learning resources
+
+== SQL exercises and games
+
+|===
+|Name |URL |Description  |Comment
+
+|Select Star SQL
+|https://selectstarsql.com[]
+|Free. Exercices based on Texas Death row statistics
+|Great introduction to SQL through a political and important subject.
+
+|SQL Murder Mystery
+|https://mystery.knightlab.com[]
+|Free. Solve a murder mystery with SQL
+|Great fun.
+Not really more advanced than Select Star SQL, but less guided
+
+|SQL Island
+|https://sql-island.informatik.uni-kl.de/
+|Free.
+|Untested.
+
+|SQL Noir
+|https://www.sqlnoir.com
+|Free.
+|Untested.
+
+|SQL Police Department
+|https://sqlpd.com/
+|Free/Paid
+|Untested.
+
+|SQL Zoo
+|https://sqlzoo.net
+|Free.
+|Untested.
+|===

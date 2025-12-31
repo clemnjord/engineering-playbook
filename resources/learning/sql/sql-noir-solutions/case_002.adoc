@@ -1,0 +1,107 @@
+= Case #002: The Stolen Sound
+
+== Setup
+In the neon glow of 1980s Los Angeles, the West Hollywood Records store was rocked by a daring theft.
+A prized vinyl record, worth over $10,000, vanished during a busy evening, leaving the store owner desperate for answers.
+Vaguely recalling the details, you know the incident occurred on July 15, 1983, at this famous store.
+Your task is to track down the thief and bring them to justice.
+
+== Objectives
+1. Retrieve the crime scene report for the record theft using the known date and location.
+2. Retrieve witness records linked to that crime scene to obtain their clues.
+3. Use the clues from the witnesses to find the suspect in the suspects table.
+4. Retrieve the suspect's interview transcript to confirm the confession.
+
+== Step 1: Retrieve the crime scene report
+
+=== Query
+[source, sql]
+----
+SELECT *
+FROM crime_scene
+WHERE type IS 'theft'
+AND location IS 'West Hollywood Records';
+----
+
+=== Result
+
+|===
+|id |date |type |location |description
+
+|65
+|19830715
+|theft
+|West Hollywood Records
+|A prized vinyl record was stolen from the store during a busy evening.
+|===
+
+== Step 2: Retrieve witness records
+
+=== Query
+[source, sql]
+----
+SELECT w.id AS witness_id, w.clue
+FROM crime_scene as c
+JOIN witnesses as w
+ON c.id = w.crime_scene_id
+WHERE type IS 'theft'
+AND location IS 'West Hollywood Records'
+LIMIT 10;
+----
+
+=== Result
+|===
+|witness_id |clue
+
+|28
+|I saw a man wearing a red bandana rushing out of the store.
+
+|75
+|The main thing I remember is that he had a distinctive gold watch on his wrist.
+|===
+
+== Step 3: Find the suspects
+
+=== Query
+[source, sql]
+----
+SELECT *
+FROM suspects
+WHERE bandana_color IS 'red'
+AND accessory LIKE '%gold watch%'
+----
+
+=== Result
+
+|===
+|id |name |bandana_color |accessory
+
+|35 |Tony Ramirez |red |gold watch
+|44 |Mickey Rivera |red |gold watch
+|97 |Rico Delgado |red |gold watch
+|===
+
+== Step 4: Retrieve suspects' interview transcripts
+
+=== Query
+[source, sql]
+----
+SELECT s.id, s.name, i.transcript
+FROM suspects AS s
+JOIN interviews AS i
+ON s.id = i.suspect_id
+WHERE s.id IN (35, 44, 97)
+----
+
+=== Result
+
+|===
+|id |name |transcript
+
+|35 |Tony Ramirez   |I wasn't anywhere near West Hollywood Records that night.
+|44 |Mickey Rivera	|I was busy with my music career; I have nothing to do with this theft.
+|97 |Rico Delgado	|I couldn't help it. I snapped and took the record.
+|===
+
+== Conclusion
+The thief is Rico Delgado.

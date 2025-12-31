@@ -1,0 +1,135 @@
+= Case #006: The Vanishing Diamond
+
+== Setup
+At Miami’s prestigious Fontainebleau Hotel charity gala, the famous “Heart of Atlantis” diamond necklace suddenly disappeared from its display.
+
+== Objectives
+Find who stole the diamond.
+
+
+== Step 1: Retrieve crime scene details
+
+=== Query
+[source, sql]
+----
+SELECT *
+FROM crime_scene
+WHERE location IS 'Fontainebleau Hotel'
+----
+
+=== Result
+
+|===
+|id	|date	|location	|description
+
+|48
+|19870520
+|Fontainebleau Hotel
+|The Heart of Atlantis necklace disappeared.
+Many guests were questioned but only two of them gave valuable clues.
+One of them is a really famous actor.
+The other one is a woman who works as a consultant for a big company and her first name ends with "an".
+|===
+
+
+== Step 2: Find witnesses
+
+=== Query 1
+[source, sql]
+----
+----
+
+=== Result 1
+Only really famous actor in the 5 returned results.
+
+|===
+|id	    |name	            |occupation	    |invitation_code
+
+|129	|Clint Eastwood     |Actor	        |VIP-G
+
+|===
+
+=== Query 2
+[source, sql]
+----
+SELECT *
+FROM guest
+WHERE occupation LIKE '%consultant%'
+AND name LIKE '%an %'
+----
+
+=== Result 2
+|===
+|id	    |name	        |occupation	    |invitation_code
+
+|116    |Vivian Nair	|Consultant	    |VIP-R
+|===
+
+
+== Step 3: Retrieve witnesses statement transcripts
+
+=== Query
+[source, sql]
+----
+SELECT *
+FROM witness_statements
+WHERE guest_id IN (116, 129)
+----
+
+=== Result
+
+|===
+|id	|guest_id	|clue
+
+|16
+|116
+|I saw someone holding an invitation ending with "-R". He was wearing a navy suit and a white tie.
+
+|50
+|129
+|I overheard someone say, "Meet me at the marina, dock 3.
+|===
+
+
+== Step 4: Find suspect(s)
+
+=== Query
+[source, sql]
+----
+SELECT g.id, g.name
+FROM guest AS g
+JOIN attire_registry AS ar
+ON g.id = ar.guest_id
+JOIN marina_rentals AS mr
+ON g.id = mr.renter_guest_id
+WHERE g.invitation_code LIKE '%-R'
+AND ar.note LIKE '%navy suit%'
+AND ar.note LIKE '%white tie%'
+----
+
+=== Result
+
+|===
+|id	    |name
+|105	|Mike Manning
+|===
+
+== Step 5: Retrieve confession
+
+=== Query
+[source, sql]
+----
+SELECT *
+FROM final_interviews
+WHERE guest_id = 105
+----
+
+=== Result
+|===
+|id     |guest_id	|confession
+
+|105    |105	    |I was the one who took the crystal. I guess I need a lawyer now?
+|===
+
+== Conclusion
+The thief is Mike Manning.

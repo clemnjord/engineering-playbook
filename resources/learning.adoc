@@ -1,1 +1,0 @@
-Learn SQL with exercices based on Texas Death row statistics : https://selectstarsql.com[]
