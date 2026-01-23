@@ -1,0 +1,40 @@
+== Install DietPi
+
+Create user:
+ sudo useradd -m -u 1033 rasp
+
+Set password:
+ sudo passwd rasp
+
+Add group:
+ groupmod -g 65537 users
+
+Add user to group and sudoers
+ sudo usermod -g users -G docker rasp
+ sudo usermod -aG sudo rasp
+
+
+After ssh-ing as rasp, set bash as default shell:
+ chsh -s /bin/bash
+
+
+Add nfs-common library:
+ sudo apt install nfs-common
+
+Configure /etc/fstab
+----
+#----------------------------------------------------------------
+# NETWORK
+#----------------------------------------------------------------
+192.168.1.10:/volume1/video /mnt/NAS/video nfs nofail,noauto,x-systemd.automount
+192.168.1.10:/volume1/books /mnt/NAS/books nfs nofail,noauto,x-systemd.automount
+192.168.1.10:/volume1/comics /mnt/NAS/comics nfs nofail,noauto,x-systemd.automount
+192.168.1.10:/volume1/music /mnt/NAS/music nfs nofail,noauto,x-systemd.automount
+192.168.1.10:/volume1/downloads /mnt/NAS/downloads nfs nofail,noauto,x-systemd.automount
+#192.168.1.10:/volume1/documents /mnt/NAS/documents nfs nofail,noauto,x-systemd.automount
+192.168.1.10:/volume1/documents /mnt/NAS/documents nfs rw,intr,actimeo=0,nofail,noauto,x-systemd.automount
+192.168.1.10:/volume1/photo /mnt/NAS/photo nfs rw,nofail,noauto,x-systemd.automount
+----
+
+After rebout run:
+ sudo chown -R rasp:users /mnt/NAS

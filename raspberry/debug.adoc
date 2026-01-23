@@ -1,0 +1,150 @@
+:source-highlighter: rouge
+
+= Raspberry Pi Debugging Guide
+
+Twice, I lost the ssh connection to my Raspberry, and when trying to access my application I had some kind of file not found error message.
+
+It came from the SD card being corrupted.
+
+Below, I will summarize what I did to fix it.
+
+== Step 1: Check the SD card
+Mount the SD card in a Linux computer and run `sudo dmesg | tail -n 50`.
+
+I had the following error messages:
+
+----
+[  542.732736] mmc0: cannot verify signal voltage switch
+[  551.852648] mmc0: cannot verify signal voltage switch
+[  612.704237] mmc0: cannot verify signal voltage switch
+[  674.673350] mmc0: cannot verify signal voltage switch
+[  819.459834] mmc0: cannot verify signal voltage switch
+[ 1063.316398] capability: warning: `gvfsd-admin' uses 32-bit capabilities (legacy support in use)
+[ 1083.545636] mmc0: card 0001 removed
+[ 1083.559735] EXT4-fs (mmcblk0p2): shut down requested (2)
+[ 1092.776522] mmc0: cannot verify signal voltage switch
+[ 1092.911800] mmc0: new UHS-I speed SDR104 SDXC card at address 0001
+[ 1092.912248] mmcblk0: mmc0:0001 DMT00 233 GiB (ro)
+[ 1092.913794]  mmcblk0: p1 p2
+[ 1176.736595] EXT4-fs (mmcblk0p2): unmounting filesystem 84958e33-a82c-4864-83b9-f483529a3bed.
+[ 1178.984935] mmc0: cannot verify signal voltage switch
+[ 1179.129801] EXT4-fs (mmcblk0p2): INFO: recovery required on readonly filesystem
+[ 1179.129813] EXT4-fs (mmcblk0p2): write access unavailable, cannot proceed (try mounting with noload)
+[ 1183.737236] mmc0: cannot verify signal voltage switch
+[ 1188.844266] mmc0: card 0001 removed
+[ 1194.696096] mmc0: cannot verify signal voltage switch
+[ 1194.828382] mmc0: new UHS-I speed SDR104 SDXC card at address 0001
+[ 1194.828743] mmcblk0: mmc0:0001 DMT00 233 GiB
+[ 1194.830334]  mmcblk0: p1 p2
+[ 1195.136423] FAT-fs (mmcblk0p1): Volume was not properly unmounted. Some data may be corrupt. Please run fsck.
+[ 1196.446066] EXT4-fs warning (device mmcblk0p2): ext4_clear_journal_err:6310: Filesystem error recorded from previous mount: IO failure
+[ 1196.449297] EXT4-fs warning (device mmcblk0p2): ext4_clear_journal_err:6318: Marked fs in need of filesystem check.
+[ 1196.452659] EXT4-fs (mmcblk0p2): warning: mounting fs with errors, running e2fsck is recommended
+[ 1196.456853] EXT4-fs (mmcblk0p2): recovery complete
+[ 1196.456933] EXT4-fs (mmcblk0p2): mounted filesystem 84958e33-a82c-4864-83b9-f483529a3bed r/w with ordered data mode. Quota mode: none.
+[ 1198.070025] EXT4-fs error (device mmcblk0p2): ext4_validate_block_bitmap:423: comm ext4lazyinit: bg 663: bad block bitmap checksum
+[ 1198.070040] Aborting journal on device mmcblk0p2-8.
+[ 1198.076027] EXT4-fs (mmcblk0p2): Remounting filesystem read-only
+[ 1206.000010] mmc0: cannot verify signal voltage switch
+[ 1259.233430] evm: overlay not supported
+[ 1284.727469] mmc0: cannot verify signal voltage switch
+[ 1296.367189] mmc0: cannot verify signal voltage switch
+[ 1487.011211] mmc0: cannot verify signal voltage switch
+[ 1496.419110] mmc0: cannot verify signal voltage switch
+[ 1512.562012] EXT4-fs (mmcblk0p2): error count since last fsck: 5
+[ 1512.562025] EXT4-fs (mmcblk0p2): initial error at time 1767541315: __ext4_find_entry:1650: inode 10932175
+[ 1512.562032] EXT4-fs (mmcblk0p2): last error at time 1767557640: ext4_validate_block_bitmap:423
+[ 1527.674605] mmc0: cannot verify signal voltage switch
+[ 1553.610327] EXT4-fs (mmcblk0p2): unmounting filesystem 84958e33-a82c-4864-83b9-f483529a3bed.
+[ 1555.077983] mmc0: cannot verify signal voltage switch
+[ 1555.218305] FAT-fs (mmcblk0p1): Volume was not properly unmounted. Some data may be corrupt. Please run fsck.
+[ 1569.371427] mmc0: card 0001 removed
+[ 2002.251088] mmc0: cannot verify signal voltage switch
+[ 2002.386912] mmc0: new UHS-I speed SDR104 SDXC card at address 0001
+[ 2002.387300] mmcblk0: mmc0:0001 DMT00 233 GiB
+[ 2002.391902]  mmcblk0: p1 p2
+----
+
+Look at the logs and see if you find something meaningful.
+Here, the voltage switch errors indicate that the SD card is failing.
+
+== Step 2: Backup data
+
+Backup the SD card using the following command:
+[source, shell]
+----
+sudo dd if=/dev/mmcblk0 of=raspberry.img bs=4M status=progress conv=noerror,sync
+----
+
+This will create a file named `raspberry.img` in the current folder.
+
+[NOTE]
+====
+It can take a long time depending on the size of the SD card and the speed of your computer.
+====
+
+== Step 3: Repair the filesystem
+We will need to repair the filesystem.
+
+First, archive unrepaired backup
+
+[source, shell, options="linenums"]
+----
+tar -cf raspberry.img.tar.gz  raspberry.img
+----
+
+Then, inspect the partitions of the image.
+Just check that it contains the expected partitions (boot and root).
+
+[source, shell]
+----
+sudo fdisk -l raspberry.img
+----
+
+The return should look like this:
+[source, shell]
+----
+Disk 20260101raspi.img: 232.96 GiB, 250139901952 bytes, 488554496 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x441fe6da
+
+Device             Boot  Start       End   Sectors   Size Id Type
+20260101raspi.img1 *      2048    264191    262144   128M  c W95 FAT32 (LBA)
+20260101raspi.img2      264192 488554495 488290304 232.8G 83 Linux
+----
+
+Note the start value of the Linux partition (here: 264192).
+
+Set up a loop device with partition scanning:
+
+[source, shell]
+----
+sudo losetup --find --partscan --show raspberry.img
+----
+
+This prints something like /dev/loop0. The partitions will appear as /dev/loop0p1, /dev/loop0p2, etc.
+
+Run fsck on the Linux partition inside the image:
+[source, shell]
+----
+sudo fsck -f /dev/loop0p2
+----
+
+Detach the loop device when done:
+[source, shell]
+----
+sudo losetup -d /dev/loop0
+----
+
+== Step 4: Flash the image on a new SD card
+
+Use the repaired image to flash a new SD card:
+[source, shell]
+----
+sudo dd if=raspberry.img of=/dev/mmcblk0 bs=4M status=progress conv=noerror,sync
+----
+
+Do not use the old SD card again, as it is likely to fail again.

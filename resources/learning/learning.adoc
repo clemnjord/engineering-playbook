@@ -1,5 +1,22 @@
 = Learning resources
 
+== Angular
+|===
+|Name |URL |Description  |Comment
+
+|Your first Angular app
+|https://angular.dev/tutorials/first-app
+|Free. Official Angular tutorial
+|OK introduction to Angular.
+
+Very guided and without much explanation of concepts or reasoning.
+No guidance on project structure or Angular best practices.
+
+Has the merit of showing how to build a complete app from scratch.
+|===
+
+
+
 == SQL exercises and games
 
 |===
